@@ -17,4 +17,7 @@ import java.util.Optional;
 @Repository
 public interface RouteRepository extends JpaRepository<Route,Integer> {
 
+    Optional<Route> findByRouteId(int routeId);
+
+
 }

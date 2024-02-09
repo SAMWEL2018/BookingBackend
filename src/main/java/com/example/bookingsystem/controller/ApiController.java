@@ -1,8 +1,10 @@
 package com.example.bookingsystem.controller;
 
 import com.example.bookingsystem.model.*;
+import com.example.bookingsystem.model.Package;
 import com.example.bookingsystem.repository.UserRepository;
 import com.example.bookingsystem.serviceImpl.IdentifierImpl;
+import com.example.bookingsystem.serviceImpl.PackageImpl;
 import com.example.bookingsystem.serviceImpl.RouteServiceImpl;
 import com.example.bookingsystem.serviceImpl.TicketServiceImpl;
 import com.example.bookingsystem.serviceInt.UserAuthService;
@@ -43,6 +45,7 @@ public class ApiController {
     private final UserRepository userRepository;
     private final TicketServiceImpl ticketService;
     private final RouteServiceImpl routeService;
+    private final PackageImpl aPackageImpl;
 
     /**
      * ------------------------------------------------------------------------------------------
@@ -108,13 +111,24 @@ public class ApiController {
         return ResponseEntity.status(401).body(CustomResponse.builder().responseCode("401").responseDesc("UNEXPECTED ERROR ON CONTROLLER"));
     }
 
+    @RequestMapping(value = "p1/getTickets", method = RequestMethod.GET)
+    public ResponseEntity<List<Ticket>> getTickets() {
+        return ResponseEntity.ok(ticketService.getTickets());
+    }
+
     @RequestMapping(value = "s3/payTicket", method = RequestMethod.POST)
     public ResponseEntity<?> payTicket(@RequestBody PayTicket payTicket) {
-        JsonNode jsonNode = ticketService.sendPayRequestToMpesaService(payTicket);
-        if (jsonNode != null) {
-            return ResponseEntity.status(Integer.parseInt(jsonNode.get("responseCode").asText())).body(jsonNode);
+        Optional<Route> route = routeService.findRoute(payTicket.getRouteId());
+        if (route.isPresent()) {
+            JsonNode jsonNode = ticketService.sendPayRequestToMpesaService(PayTicket.builder().ticketNo(payTicket.getTicketNo()).amount(route.get().getTicketPrice()).build());
+            if (jsonNode != null) {
+                return ResponseEntity.status(Integer.parseInt(jsonNode.get("responseCode").asText())).body(jsonNode);
+            }
+            return ResponseEntity.status(400).body(CustomResponse.builder().responseCode("400").responseDesc("AMOUNT OR PHONE NO OR TICKET NO IS NULL"));
         }
-        return ResponseEntity.status(400).body(CustomResponse.builder().responseCode("400").responseDesc("AMOUNT OR PHONE NO OR TICKET NO IS NULL"));
+
+        return ResponseEntity.status(400).body(CustomResponse.builder().responseCode("400").responseDesc("ROUTE NOT PRESENT"));
+
     }
 
     @RequestMapping(value = "p1/callTicketPayment/{ticketNo}", method = RequestMethod.POST)
@@ -174,6 +188,57 @@ public class ApiController {
         }
         return ResponseEntity.status(402).body(CustomResponse.builder().responseDesc("400").responseDesc("EMPTY ROUTE OBJECT"));
 
+    }
+
+    /**
+     * ------------------------------------------------------------------------------------------
+     * -------------------------------*** ROUTE ***-------------------------------------------
+     * ------------------------------------------------------------------------------------------
+     */
+
+    @RequestMapping(value = "/p1/sendPackage", method = RequestMethod.POST)
+    public ResponseEntity<?> sendPackage(@RequestBody Package pac, HttpServletRequest httpServletRequest) {
+        String phoneNo = identifierService.getSubject(httpServletRequest);
+        log.info("phoneNo as Subject {}", phoneNo);
+        Optional<User> user = userRepository.findUserByPhoneNumber(phoneNo);
+
+        if (pac != null) {
+            CustomResponse res = aPackageImpl.sendPackage(Package.builder()
+                    .packageDelicacy(pac.getPackageDelicacy())
+                    .packageDescription(pac.getPackageDescription())
+                    .packageRoute(pac.getPackageRoute())
+                    .packageName(pac.getPackageName())
+                    .phoneNumber(phoneNo)
+                    .build());
+            return ResponseEntity.status(Integer.parseInt(res.getResponseCode())).body(res);
+        }
+        return ResponseEntity.status(400).body(CustomResponse.builder().responseDesc("BAD REQUEST BODY").responseCode("400").build());
+    }
+
+    @RequestMapping(value = "p1/payPackage", method = RequestMethod.POST)
+    public ResponseEntity<?> payPackage(@RequestBody PayTicket payTicket, HttpServletRequest httpServletRequest) {
+        log.info("pay package");
+        log.info("object {}", payTicket);
+        String phoneNo = identifierService.getSubject(httpServletRequest);
+        log.info("phoneNo as Subject {}", phoneNo);
+        Optional<User> user = userRepository.findUserByPhoneNumber(phoneNo);
+
+        Optional<Route> route = routeService.findRoute(payTicket.getRouteId());
+        if (route.isPresent()) {
+            PayTicket build = PayTicket.builder()
+                    .amount(route.get().getTicketPrice())
+                    .ticketNo(payTicket.getTicketNo())
+                    .phoneNumber(user.get().getPhoneNumber())
+                    .build();
+            log.info("inside object {}", build);
+            JsonNode jsonNode = ticketService.sendPayRequestToMpesaService(build);
+            if (jsonNode != null) {
+                return ResponseEntity.status(Integer.parseInt(jsonNode.get("responseCode").asText())).body(jsonNode);
+            }
+            return ResponseEntity.status(400).body(CustomResponse.builder().responseCode("400").responseDesc("AMOUNT OR PHONE NO OR TICKET NO IS NULL"));
+        }
+
+        return ResponseEntity.status(400).body(CustomResponse.builder().responseCode("400").responseDesc("ROUTE NOT PRESENT"));
     }
 
 

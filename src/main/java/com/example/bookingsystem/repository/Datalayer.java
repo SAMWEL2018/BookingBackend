@@ -1,6 +1,7 @@
 package com.example.bookingsystem.repository;
 
 import com.example.bookingsystem.model.*;
+import com.example.bookingsystem.model.Package;
 import com.example.bookingsystem.serviceInt.UserAuthService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ public class Datalayer {
     private final TicketRepository ticketRepository;
     private final UserAuthService userAuthService;
     private final RouteRepository routeRepository;
+    private final PackageRepository packageRepository;
 
 
     public CustomResponse createUser(User user) {
@@ -53,6 +55,14 @@ public class Datalayer {
                     .build();
         }
     }
+    public CustomResponse sendPackage(Package pac){
+        Package pc = packageRepository.save(pac);
+        return CustomResponse.builder()
+                .responseCode("200")
+                .responseDesc("Package Booking Created Successfully")
+                .ticketNo(pc.getPackageId())
+                .build();
+    }
 
     public CustomResponse createTicket(Ticket ticket) {
         Ticket t1=ticketRepository.save(ticket);
@@ -66,7 +76,10 @@ public class Datalayer {
     public Optional<Ticket> getTicket(int ticketNo){
         return ticketRepository.getTicketByTicketNo(ticketNo);
     }
+    public List<Ticket> getTickets(){
+        return ticketRepository.getAllTickets();
 
+    }
     public void updateTransactionIfStkSent(boolean isSent,int ticketNo){
         ticketRepository.updateTicketIfStkSend(true,ticketNo);
     }
@@ -94,6 +107,9 @@ public class Datalayer {
                 .responseCode("200")
                 .responseDesc("Route Created Successfully")
                 .build();
+    }
+    public Optional<Route> findRouteById(int id){
+        return routeRepository.findByRouteId(id);
     }
 
 }

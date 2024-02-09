@@ -48,11 +48,14 @@ public class TicketServiceImpl implements TicketServiceInt {
     }
 
     public JsonNode sendPayRequestToMpesaService(PayTicket payTicket) {
+        log.info("inside 1");
         if (payTicket.getAmount() != null && payTicket.getPhoneNumber() != null) {
+            log.info("inside 2");
             Optional<Ticket> ticket = datalayer.getTicket(payTicket.getTicketNo());
+            log.info("payTicket {}",payTicket);
             if (ticket.isPresent()) {
                 JsonNode node = httpService.sendApiCallRequest(HttpMethod.POST, appConfig.getMpesaServiceUrl(), payTicket);
-                log.info("STK SERVICE RESPONSE ON TICKER {} FOR {} WITH RESPONSE {}", payTicket.getTicketNo(), payTicket.getPhoneNumber(), node);
+                log.info("STK SERVICE RESPONSE ON REQUEST TO PAY {} FOR {} WITH RESPONSE {}", payTicket.getTicketNo(), payTicket.getPhoneNumber(), node);
                 if (node.get("responseCode").asText().equals("200")) {
                     datalayer.updateTransactionIfStkSent(true, payTicket.getTicketNo());
                 }
@@ -79,5 +82,9 @@ public class TicketServiceImpl implements TicketServiceInt {
         return CustomResponse.builder().responseCode("401").responseDesc("PAYMENT NOT FOUND").build();
     }
 
+    public List<Ticket> getTickets(){
+        return datalayer.getTickets();
+
+    }
 
 }

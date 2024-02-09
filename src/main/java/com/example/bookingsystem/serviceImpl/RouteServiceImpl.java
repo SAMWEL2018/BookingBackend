@@ -7,6 +7,8 @@ import com.example.bookingsystem.serviceInt.RouteServiceInt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * @author samwel.wafula
  * Created on 27/01/2024
@@ -15,10 +17,15 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class RouteServiceImpl  implements RouteServiceInt {
-    private  final Datalayer datalayer;
+public class RouteServiceImpl implements RouteServiceInt {
+    private final Datalayer datalayer;
+
     @Override
     public CustomResponse createRoute(Route route) {
         return datalayer.createRoute(route);
+    }
+
+    public Optional<Route> findRoute(int id) {
+        return datalayer.findRouteById(id);
     }
 }

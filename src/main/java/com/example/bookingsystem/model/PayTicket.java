@@ -1,5 +1,6 @@
 package com.example.bookingsystem.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,9 +13,14 @@ import lombok.Data;
 
 @Builder
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PayTicket {
 
     private String amount;
+    //@Required on Body
+    private int routeId;
+    //@Required on Body
     private String phoneNumber;
+    //@Required on Body
     private int ticketNo;
 }

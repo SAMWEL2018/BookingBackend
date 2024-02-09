@@ -31,4 +31,6 @@ public class Route {
     //@@
     @Basic
     private String ticketPrice;
+
+
 }
