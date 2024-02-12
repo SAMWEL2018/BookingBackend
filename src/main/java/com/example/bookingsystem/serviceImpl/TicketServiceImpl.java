@@ -1,6 +1,7 @@
 package com.example.bookingsystem.serviceImpl;
 
 import com.example.bookingsystem.config.AppConfig;
+import com.example.bookingsystem.config.CachingConfiguration;
 import com.example.bookingsystem.httphandler.HttpService;
 import com.example.bookingsystem.model.*;
 import com.example.bookingsystem.repository.Datalayer;
@@ -30,6 +31,7 @@ public class TicketServiceImpl implements TicketServiceInt {
     private final Datalayer datalayer;
     private final HttpService httpService;
     private final AppConfig appConfig;
+    private final CachingConfiguration cachingConfiguration;
 
     @Override
     public CustomResponse bookTicket(Ticket ticket) {
@@ -37,6 +39,7 @@ public class TicketServiceImpl implements TicketServiceInt {
     }
 
     @Override
+
     public List<TicketResponse> getBookedTickets(int routeId) throws JsonProcessingException {
         return datalayer.getListOfBookedTickets(routeId);
     }
@@ -52,7 +55,7 @@ public class TicketServiceImpl implements TicketServiceInt {
         if (payTicket.getAmount() != null && payTicket.getPhoneNumber() != null) {
             log.info("inside 2");
             Optional<Ticket> ticket = datalayer.getTicket(payTicket.getTicketNo());
-            log.info("payTicket {}",payTicket);
+            log.info("payTicket {}", payTicket);
             if (ticket.isPresent()) {
                 JsonNode node = httpService.sendApiCallRequest(HttpMethod.POST, appConfig.getMpesaServiceUrl(), payTicket);
                 log.info("STK SERVICE RESPONSE ON REQUEST TO PAY {} FOR {} WITH RESPONSE {}", payTicket.getTicketNo(), payTicket.getPhoneNumber(), node);
@@ -82,8 +85,51 @@ public class TicketServiceImpl implements TicketServiceInt {
         return CustomResponse.builder().responseCode("401").responseDesc("PAYMENT NOT FOUND").build();
     }
 
-    public List<Ticket> getTickets(){
+    //    @Cacheable(value = "tk")
+    public List<Ticket> getTickets() {
         return datalayer.getTickets();
+
+    }
+
+    public Optional<Ticket> getTicket(int ticketNo) {
+        return datalayer.getTicket(ticketNo);
+    }
+
+    public Optional<Ticket> updateTicket(int ticketNo, int routeId) {
+        try {
+            cachingConfiguration.getSpecificTicket.invalidate(ticketNo);
+            cachingConfiguration.getSpecificTicket.cleanUp();
+            log.info("ticket cache invalidated");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return datalayer.updateTicket(ticketNo, routeId);
+    }
+
+    public List<Ticket> getCachedTickets() {
+        List<Ticket> tks = cachingConfiguration.bookedTicketsCache.getIfPresent("0");
+
+        if (tks != null) {
+            return tks;
+        } else {
+            log.info("Cache miss! ");
+            List<Ticket> tickets = getTickets();
+            cachingConfiguration.bookedTicketsCache.put("0", tickets);
+
+            return tickets;
+        }
+    }
+
+    public Optional<Ticket> getCachedTicket(int ticketNo) {
+        Optional<Ticket> ticket = cachingConfiguration.getSpecificTicket.getIfPresent(ticketNo);
+        if (ticket != null) {
+            return ticket;
+        } else {
+            log.info("Cache miss for the ticket");
+            Optional<Ticket> tk = getTicket(ticketNo);
+            cachingConfiguration.getSpecificTicket.put(ticketNo, tk);
+            return tk;
+        }
 
     }
 

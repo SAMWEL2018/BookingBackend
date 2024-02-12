@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
@@ -22,7 +23,7 @@ import java.sql.Timestamp;
 @Setter
 @Entity
 @Table(name = "tbl_tickets")
-public class Ticket {
+public class Ticket implements Serializable {
 
     //* From fronted marked with @@
 

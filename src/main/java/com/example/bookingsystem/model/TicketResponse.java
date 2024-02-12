@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
+
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 /**
@@ -14,6 +17,6 @@ import lombok.Data;
  */
 @Builder
 @Data
-public class TicketResponse {
+public class TicketResponse implements Serializable {
     private String seatNo;
 }

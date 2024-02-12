@@ -1,7 +1,9 @@
 package com.example.bookingsystem.controller;
 
+import com.example.bookingsystem.config.CachingConfiguration;
 import com.example.bookingsystem.model.*;
 import com.example.bookingsystem.model.Package;
+import com.example.bookingsystem.repository.TicketRepository;
 import com.example.bookingsystem.repository.UserRepository;
 import com.example.bookingsystem.serviceImpl.IdentifierImpl;
 import com.example.bookingsystem.serviceImpl.PackageImpl;
@@ -15,15 +17,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -46,6 +46,8 @@ public class ApiController {
     private final TicketServiceImpl ticketService;
     private final RouteServiceImpl routeService;
     private final PackageImpl aPackageImpl;
+    private final TicketRepository ticketRepository;
+    private final CachingConfiguration cachingConfiguration;
 
     /**
      * ------------------------------------------------------------------------------------------
@@ -89,6 +91,7 @@ public class ApiController {
      * ------------------------------------------------------------------------------------------
      */
     @RequestMapping(value = "s3/bookTicket", method = RequestMethod.POST)
+    //@CachePut(value = "tickets")
     public ResponseEntity<?> bookTicket(@RequestBody Ticket ticket, HttpServletRequest httpServletRequest) {
         //String subject = "0712321806";
         String phoneNo = identifierService.getSubject(httpServletRequest);
@@ -111,9 +114,28 @@ public class ApiController {
         return ResponseEntity.status(401).body(CustomResponse.builder().responseCode("401").responseDesc("UNEXPECTED ERROR ON CONTROLLER"));
     }
 
+    //@Cacheable(value = "ticket",key = "#ticketNo")
     @RequestMapping(value = "p1/getTickets", method = RequestMethod.GET)
+    //@Cacheable(value = "tickets")
     public ResponseEntity<List<Ticket>> getTickets() {
-        return ResponseEntity.ok(ticketService.getTickets());
+        log.info("request");
+        //List<Ticket> tks= cachingConfiguration.
+        return ResponseEntity.ok(ticketService.getCachedTickets());
+    }
+
+   // @Cacheable(value = "ticket", key = "#ticketNo")
+    @RequestMapping(value = "p1/getTicket/{ticketNo}", method = RequestMethod.GET)
+    public Optional<Ticket> getTicket(@PathVariable("ticketNo") int ticketNo) {
+        log.info("hit");
+        //Ticket ticket= cachingConfiguration.cache.getIfPresent("ticketNo");
+        return ticketService.getCachedTicket(ticketNo);
+    }
+
+    @CachePut(value = "ticket", key = "#ticketNo")
+    @RequestMapping(value = "p1/updateTicket/{ticketNo}", method = RequestMethod.POST)
+    public Optional<Ticket> updateTicket(@RequestBody Ticket ticket, @PathVariable("ticketNo") int ticketNo) {
+
+        return ticketService.updateTicket(ticketNo, ticket.getRouteId());
     }
 
     @RequestMapping(value = "s3/payTicket", method = RequestMethod.POST)
@@ -128,7 +150,6 @@ public class ApiController {
         }
 
         return ResponseEntity.status(400).body(CustomResponse.builder().responseCode("400").responseDesc("ROUTE NOT PRESENT"));
-
     }
 
     @RequestMapping(value = "p1/callTicketPayment/{ticketNo}", method = RequestMethod.POST)
@@ -157,14 +178,18 @@ public class ApiController {
     }
 
 
+    //   @Cacheable(value = "getBooked")
     @RequestMapping(value = "p1/getTicketsBooked/{routeId}", method = RequestMethod.GET)
-    public ResponseEntity<?> getTicketsBooked(@PathVariable("routeId") int routeId) throws JsonProcessingException {
+    public List<TicketResponse> getTicketsBooked(@PathVariable("routeId") int routeId) throws JsonProcessingException {
+        log.info("req");
         List<TicketResponse> res = ticketService.getBookedTickets(routeId);
         if (!res.isEmpty()) {
-            return ResponseEntity.status(200).body(res);
+            // return ResponseEntity.status(200).body(res);
+            return res;
 
         } else {
-            return ResponseEntity.status(200).body(CustomResponse.builder().responseCode("200").responseDesc("No Booked Ticket!").build());
+            //return ResponseEntity.status(200).body(CustomResponse.builder().responseCode("200").responseDesc("No Booked Ticket!").build());
+            return null;
         }
 
 

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author samwel.wafula
  * Created on 25/01/2024
@@ -14,7 +16,7 @@ import lombok.Data;
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CustomResponse {
+public class CustomResponse implements Serializable {
 
     private String responseCode;
     private String responseDesc;

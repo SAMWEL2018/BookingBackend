@@ -55,7 +55,8 @@ public class Datalayer {
                     .build();
         }
     }
-    public CustomResponse sendPackage(Package pac){
+
+    public CustomResponse sendPackage(Package pac) {
         Package pc = packageRepository.save(pac);
         return CustomResponse.builder()
                 .responseCode("200")
@@ -65,7 +66,7 @@ public class Datalayer {
     }
 
     public CustomResponse createTicket(Ticket ticket) {
-        Ticket t1=ticketRepository.save(ticket);
+        Ticket t1 = ticketRepository.save(ticket);
         return CustomResponse.builder()
                 .responseCode("200")
                 .responseDesc("Ticket Created Successfully")
@@ -73,23 +74,32 @@ public class Datalayer {
                 .build();
     }
 
-    public Optional<Ticket> getTicket(int ticketNo){
+    public Optional<Ticket> getTicket(int ticketNo) {
         return ticketRepository.getTicketByTicketNo(ticketNo);
     }
-    public List<Ticket> getTickets(){
+
+    public List<Ticket> getTickets() {
         return ticketRepository.getAllTickets();
-
-    }
-    public void updateTransactionIfStkSent(boolean isSent,int ticketNo){
-        ticketRepository.updateTicketIfStkSend(true,ticketNo);
-    }
-    public void updateTransactionIfTicketIdPaid(boolean isPaid,String mpesaReceiptNo,int ticketNo){
-        ticketRepository.updateIfTicketIsPaid(isPaid,mpesaReceiptNo,ticketNo);
     }
 
-    public Optional<Ticket> getCustomerTicketNotPaidFor(String phoneNo, boolean isPaid){
-        return ticketRepository.getTicketByPhoneNumberAndTicketPaid(phoneNo,false);
+    public Optional<Ticket> updateTicket(int ticketNo, int routeId) {
+        ticketRepository.updateTicket(ticketNo, routeId);
+        return ticketRepository.getTicketByTicketNo(ticketNo);
+
     }
+
+    public void updateTransactionIfStkSent(boolean isSent, int ticketNo) {
+        ticketRepository.updateTicketIfStkSend(true, ticketNo);
+    }
+
+    public void updateTransactionIfTicketIdPaid(boolean isPaid, String mpesaReceiptNo, int ticketNo) {
+        ticketRepository.updateIfTicketIsPaid(isPaid, mpesaReceiptNo, ticketNo);
+    }
+
+    public Optional<Ticket> getCustomerTicketNotPaidFor(String phoneNo, boolean isPaid) {
+        return ticketRepository.getTicketByPhoneNumberAndTicketPaid(phoneNo, false);
+    }
+
     public List<TicketResponse> getListOfBookedTickets(int routeId) throws JsonProcessingException {
         List<Ticket> tickets = ticketRepository.getTicketByRouteId(routeId);
         List<TicketResponse> rp = new ArrayList<>();
@@ -108,7 +118,8 @@ public class Datalayer {
                 .responseDesc("Route Created Successfully")
                 .build();
     }
-    public Optional<Route> findRouteById(int id){
+
+    public Optional<Route> findRouteById(int id) {
         return routeRepository.findByRouteId(id);
     }
 

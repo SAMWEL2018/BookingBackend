@@ -20,6 +20,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     List<Ticket> getTicketByRouteId(int routeId);
 
+    @Query(value = "update tbl_tickets set route_id=:routeId where ticket_no=:ticketNo", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void updateTicket(@Param("ticketNo") int ticketNo, @Param("routeId") int routeId);
+
     @Query(value = "select * from tbl_tickets", nativeQuery = true)
     List<Ticket> getAllTickets();
 
