@@ -7,6 +7,7 @@ import com.example.bookingsystem.model.*;
 import com.example.bookingsystem.repository.Datalayer;
 import com.example.bookingsystem.serviceInt.TicketServiceInt;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -133,4 +134,37 @@ public class TicketServiceImpl implements TicketServiceInt {
 
     }
 
+    public CustomResponse cancelTicket(int ticketNo, boolean cancel) {
+        datalayer.cancelTicket(ticketNo, cancel);
+        return CustomResponse.builder().responseCode("200").responseDesc("ticket cancelled").build();
+    }
+
+    public CustomResponse initiateRefund(int ticketNo) {
+        CustomResponse customResponse = null;
+        Optional<Ticket> ticket = getTicket(ticketNo);
+        if (ticket.isPresent()) {
+            int routeId = ticket.get().getRouteId();
+            Optional<Route> route = datalayer.findRouteById(routeId);
+            if (route.isPresent()) {
+                String ticketPrice = route.get().getTicketPrice();
+                double price = Double.parseDouble(ticketPrice);
+                double finalPrice = 0.2 * price;
+                log.info("Refund Price 20 % OFF {}", finalPrice);
+
+                try {
+                   JsonNode node = httpService.sendApiCallRequest(HttpMethod.POST, appConfig.getMpesaServiceB2CUrl(), PayTicket.builder().phoneNumber(ticket.get().getPhoneNumber()).amount(String.valueOf(finalPrice)).build());
+                   customResponse = new ObjectMapper().readValue(new ObjectMapper().writeValueAsString(node), new TypeReference<CustomResponse>() {});
+                    log.info("response on B2C {}", node);
+                    return customResponse;
+                } catch (Exception e) {
+                    log.error("Error on Sending B2C REQ {}", e.getMessage());
+                    throw new RuntimeException(e);
+
+                }
+
+
+            }
+        }
+        return null;
+    }
 }

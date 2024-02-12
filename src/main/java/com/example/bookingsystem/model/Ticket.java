@@ -53,6 +53,11 @@ public class Ticket implements Serializable {
     @Basic
     @Column(name = "is_push_sent")
     private boolean isStkPushSent=false;
+
+    @Basic
+    @Column(name = "is_ticket_cancelled")
+    private boolean ticketCancelled=false;
+
     @Basic
     @Column(name = "mpesa_receipt_number")
     private String mpesaReceiptNumber;

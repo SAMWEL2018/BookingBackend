@@ -20,3 +20,4 @@ server:
 app:
   MPESA_SERVICE_URL: ${MPESA_SERVICE_URL:http://localhost:8011/sendStkPush}
   MPESA_SERVICE_URL_TRANSACTION: ${MPESA_SERVICE_URL:http://localhost:8011/getTransaction/}
+  MPESA_SERVICE__B2C_URL_TRANSACTION: ${MPESA_SERVICE_URL:http://localhost:8011/initiateB2C}

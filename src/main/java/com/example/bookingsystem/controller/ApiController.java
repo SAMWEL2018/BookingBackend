@@ -90,6 +90,18 @@ public class ApiController {
      * -------------------------------*** TICKET ***-------------------------------------------
      * ------------------------------------------------------------------------------------------
      */
+    @RequestMapping(value = "p1/cancelTicket/{ticketNo}", method = RequestMethod.POST)
+    public ResponseEntity<?> cancelTicket(@PathVariable("ticketNo") int ticketNo) {
+        CustomResponse customResponse = ticketService.cancelTicket(ticketNo, true);
+        return ResponseEntity.status(200).body(customResponse);
+    }
+
+    @RequestMapping(value = "p1/refundTicket/{ticketNo}", method = RequestMethod.POST)
+    public ResponseEntity<?> refundTicket(@PathVariable("ticketNo") int ticketNo) {
+        CustomResponse customResponse = ticketService.initiateRefund(ticketNo);
+        return ResponseEntity.status(Integer.parseInt(customResponse.getResponseCode())).body(customResponse);
+    }
+
     @RequestMapping(value = "s3/bookTicket", method = RequestMethod.POST)
     //@CachePut(value = "tickets")
     public ResponseEntity<?> bookTicket(@RequestBody Ticket ticket, HttpServletRequest httpServletRequest) {
@@ -123,7 +135,7 @@ public class ApiController {
         return ResponseEntity.ok(ticketService.getCachedTickets());
     }
 
-   // @Cacheable(value = "ticket", key = "#ticketNo")
+    // @Cacheable(value = "ticket", key = "#ticketNo")
     @RequestMapping(value = "p1/getTicket/{ticketNo}", method = RequestMethod.GET)
     public Optional<Ticket> getTicket(@PathVariable("ticketNo") int ticketNo) {
         log.info("hit");

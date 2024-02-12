@@ -18,4 +18,6 @@ public class AppConfig {
     private String mpesaServiceUrl;
     @Value("${app.MPESA_SERVICE_URL_TRANSACTION}")
     private String mpesaServiceUrlTransaction;
+    @Value("${app.MPESA_SERVICE__B2C_URL_TRANSACTION}")
+    private String mpesaServiceB2CUrl;
 }

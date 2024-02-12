@@ -111,6 +111,10 @@ public class Datalayer {
 
     }
 
+    public void cancelTicket(int ticketNo,boolean cancel){
+        ticketRepository.cancelTicket(ticketNo,true);
+    }
+
     public CustomResponse createRoute(Route route) {
         routeRepository.save(route);
         return CustomResponse.builder()
