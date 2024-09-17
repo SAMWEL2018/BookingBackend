@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Optional;
@@ -87,8 +88,8 @@ public class TicketServiceImpl implements TicketServiceInt {
     }
 
     //    @Cacheable(value = "tk")
-    public List<Ticket> getTickets() {
-        return datalayer.getTickets();
+    public Flux<List<Ticket>> getTickets() {
+        return datalayer.getTicketsFlux();
 
     }
 
@@ -107,6 +108,20 @@ public class TicketServiceImpl implements TicketServiceInt {
         return datalayer.updateTicket(ticketNo, routeId);
     }
 
+//    public Flux<List<Ticket>> getCachedTicketsFlux() {
+////        List<Ticket> tks = cachingConfiguration.bookedTicketsCache.getIfPresent("0");
+////
+////        if (tks != null) {
+////            return tks;
+////        } else {
+//            log.info("Cache miss! ");
+//            Flux<List<Ticket>> tickets = getTickets();
+//            //cachingConfiguration.bookedTicketsCache.put("0", tickets);
+//
+//            return tickets;
+//       // }
+//    }
+
     public List<Ticket> getCachedTickets() {
         List<Ticket> tks = cachingConfiguration.bookedTicketsCache.getIfPresent("0");
 
@@ -114,7 +129,7 @@ public class TicketServiceImpl implements TicketServiceInt {
             return tks;
         } else {
             log.info("Cache miss! ");
-            List<Ticket> tickets = getTickets();
+            List<Ticket> tickets = datalayer.getTickets();
             cachingConfiguration.bookedTicketsCache.put("0", tickets);
 
             return tickets;
@@ -152,8 +167,9 @@ public class TicketServiceImpl implements TicketServiceInt {
                 log.info("Refund Price 20 % OFF {}", finalPrice);
 
                 try {
-                   JsonNode node = httpService.sendApiCallRequest(HttpMethod.POST, appConfig.getMpesaServiceB2CUrl(), PayTicket.builder().phoneNumber(ticket.get().getPhoneNumber()).amount(String.valueOf(finalPrice)).build());
-                   customResponse = new ObjectMapper().readValue(new ObjectMapper().writeValueAsString(node), new TypeReference<CustomResponse>() {});
+                    JsonNode node = httpService.sendApiCallRequest(HttpMethod.POST, appConfig.getMpesaServiceB2CUrl(), PayTicket.builder().phoneNumber(ticket.get().getPhoneNumber()).amount(String.valueOf(finalPrice)).build());
+                    customResponse = new ObjectMapper().readValue(new ObjectMapper().writeValueAsString(node), new TypeReference<CustomResponse>() {
+                    });
                     log.info("response on B2C {}", node);
                     return customResponse;
                 } catch (Exception e) {

@@ -15,3 +15,8 @@ public interface TicketServiceInt {
 
     Object getBookedTickets(int routeId) throws JsonProcessingException;
 }
+
+
+/// controller
+//service
+//repository

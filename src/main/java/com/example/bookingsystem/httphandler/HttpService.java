@@ -1,5 +1,6 @@
 package com.example.bookingsystem.httphandler;
 
+import com.example.bookingsystem.model.AccountDetailObject;
 import com.example.bookingsystem.model.PayTicket;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,14 @@ public class HttpService {
         return webClient.method(httpMethod)
                 .uri(url)
                 .bodyValue(payTicket)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+    public JsonNode sendApiCallRequest(HttpMethod httpMethod, String url, AccountDetailObject accountDetailObject) {
+        return webClient.method(httpMethod)
+                .uri(url)
+                .bodyValue(accountDetailObject)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();

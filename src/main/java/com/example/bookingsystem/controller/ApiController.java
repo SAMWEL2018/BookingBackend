@@ -21,6 +21,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +33,7 @@ import java.util.Optional;
  * Time 11:48
  * Project BookingSystem
  */
-@RestController
-@Component
+@Controller
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping(value = "/api/")
@@ -132,7 +132,7 @@ public class ApiController {
     public ResponseEntity<List<Ticket>> getTickets() {
         log.info("request");
         //List<Ticket> tks= cachingConfiguration.
-        return ResponseEntity.ok(ticketService.getCachedTickets());
+        return ResponseEntity.ok(List.of());
     }
 
     // @Cacheable(value = "ticket", key = "#ticketNo")
@@ -280,3 +280,5 @@ public class ApiController {
 
 
 }
+
+

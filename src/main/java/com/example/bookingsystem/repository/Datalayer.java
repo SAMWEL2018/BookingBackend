@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +79,11 @@ public class Datalayer {
         return ticketRepository.getTicketByTicketNo(ticketNo);
     }
 
+    public Flux<List<Ticket>> getTicketsFlux() {
+       return  Flux.just(ticketRepository.getAllTickets());
+    }
     public List<Ticket> getTickets() {
-        return ticketRepository.getAllTickets();
+        return  ticketRepository.getAllTickets();
     }
 
     public Optional<Ticket> updateTicket(int ticketNo, int routeId) {
@@ -111,8 +115,8 @@ public class Datalayer {
 
     }
 
-    public void cancelTicket(int ticketNo,boolean cancel){
-        ticketRepository.cancelTicket(ticketNo,true);
+    public void cancelTicket(int ticketNo, boolean cancel) {
+        ticketRepository.cancelTicket(ticketNo, true);
     }
 
     public CustomResponse createRoute(Route route) {

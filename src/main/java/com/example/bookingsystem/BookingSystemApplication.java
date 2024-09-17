@@ -8,6 +8,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
+
 import java.time.Duration;
 
 @SpringBootApplication
@@ -20,7 +21,7 @@ public class BookingSystemApplication {
 
     @Bean
     WebClient webClient() {
-        HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofMillis(5000));
+        HttpClient httpClient = HttpClient.create();
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();

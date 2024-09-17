@@ -35,7 +35,6 @@ import java.time.Duration;
 public class SecurityConfiguration {
     private final UserAuthService userAuthService;
     private final SecurityFilter securityFilter;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)

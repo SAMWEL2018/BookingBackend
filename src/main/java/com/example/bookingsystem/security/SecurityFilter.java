@@ -54,10 +54,10 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     }
 
-    private void getUserAndCreateSecurityContext(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String voterIdNumber, String jwtToken, CachedBodyHttpServletRequest cachedBodyHttpServletRequest) throws IOException, ServletException {
-        if (StringUtils.isNotEmpty(voterIdNumber) && SecurityContextHolder.getContext().getAuthentication() == null) {
+    private void getUserAndCreateSecurityContext(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String phoneNumber, String jwtToken, CachedBodyHttpServletRequest cachedBodyHttpServletRequest) throws IOException, ServletException {
+        if (StringUtils.isNotEmpty(phoneNumber) && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userAuthService.loadUserByUsername(voterIdNumber);
+            UserDetails userDetails = userAuthService.loadUserByUsername(phoneNumber);
             Date date = jwtService.getExpirationDateOfToken(jwtToken);
             LocalDateTime localDateTime = LocalDateTime.now();
             Date CurrentDate = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
